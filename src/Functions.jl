@@ -1,4 +1,4 @@
-export UNUR_DISTR, UNUR_PAR, UNUR_GEN, UNUR_URNG
+export UNUR_DISTR, UNUR_PAR, UNUR_GEN, UNUR_URNG, UNUR_FUNCT_CONT
 export unur_urng_gsl_new, unur_urng_gslptr_new, unur_urng_gslqrng_new
 export unur_urng_prng_new, unur_urng_prngptr_new
 export RngStream_SetPackageSeed, unur_urng_rngstream_new, unur_urng_rngstreamptr_new
@@ -14,6 +14,9 @@ type UNUR_GEN
 end
 
 type UNUR_URNG
+end
+
+type UNUR_FUNCT_CONT
 end
 
 ### GSL generators
@@ -671,7 +674,7 @@ end
 
 export unur_distr_cont_get_pdfparams
 function unur_distr_cont_get_pdfparams(distribution, params)
-    res=ccall((:unur_distr_cont_get_pdfparams, "libunuran"), Cint, (Ptr{UNUR_DISTR}, Ptr{Cdouble}, ), distribution, params)
+    res=ccall((:unur_distr_cont_get_pdfparams, "libunuran"), Cint, (Ptr{UNUR_DISTR}, Ref{Ptr{Cdouble}}, ), distribution, params)
     res
 end
 

@@ -42,10 +42,16 @@ function Constants(top)
             println()
         end
     end
+
+    println("export UNUR_INFINITY")
+    println("const UNUR_INFINITY = (Inf)")
+    println()
 end
 
 header="""
-export UNUR_DISTR, UNUR_PAR, UNUR_GEN, UNUR_URNG
+export UNUR_DISTR, UNUR_PAR, UNUR_GEN, UNUR_URNG, UNUR_FUNCT_CONT
+export UNUR_FUNCT_DISCR, UNUR_IFUNCT_DISCR, UNUR_FUNCT_CVEC
+export UNUR_VFUNCT_CVEC, UNUR_FUNCTD_CVEC, UNUR_ERROR_HANDLER
 export unur_urng_gsl_new, unur_urng_gslptr_new, unur_urng_gslqrng_new
 export unur_urng_prng_new, unur_urng_prngptr_new
 export RngStream_SetPackageSeed, unur_urng_rngstream_new, unur_urng_rngstreamptr_new
@@ -61,6 +67,27 @@ type UNUR_GEN
 end
 
 type UNUR_URNG
+end
+
+type UNUR_FUNCT_CONT
+end
+
+type UNUR_FUNCT_DISCR
+end
+
+type UNUR_IFUNCT_DISCR
+end
+
+type UNUR_FUNCT_CVEC
+end
+
+type UNUR_VFUNCT_CVEC
+end
+
+type UNUR_FUNCTD_CVEC
+end
+
+type UNUR_ERROR_HANDLER
 end
 
 ### GSL generators
@@ -186,6 +213,11 @@ function Functions(top)
                 end
             end
 
+# export unur_distr_cont_set_pdfparams
+# function unur_distr_cont_set_pdfparams(distribution, params, n_params)
+#     res=ccall((:unur_distr_cont_set_pdfparams, "libunuran"), Cint, (Ptr{UNUR_DISTR}, Ptr{Cdouble}, Cint, ), distribution, params, n_params)
+#     res
+# end
             println(f, "export $(function_name)")
             all_args=join(argnames, ", ")
             println(f, "function $(function_name)($all_args)")

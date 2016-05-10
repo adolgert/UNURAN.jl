@@ -21,6 +21,15 @@ function First()
     end
 end
 
+function FindParams()
+    gu.distr=unur_distr_gamma(Float64[alpha, beta], 2)
+    out_params=Ref{Ptr{Cdouble}}(0)
+    nparams=unur_distr_cont_get_pdfparams(gu.distr, out_params)
+    println("outparams $(out_params[])")
+    arr=pointer_to_array(out_params[], nparams)
+    println("GammaUnur params: $arr")
+end
+
 function mypdf( x, distr )
     ret=0
     if abs(x) >= 1
