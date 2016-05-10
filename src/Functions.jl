@@ -344,7 +344,7 @@ end
 
 export unur_urng_fvoid_new
 function unur_urng_fvoid_new(urand, reset)
-    res=ccall((:unur_urng_fvoid_new, "libunuran"), Ptr{UNUR_URNG}, (Ptr{Cdouble}, Ptr{Unexposed}, ), urand, reset)
+    res=ccall((:unur_urng_fvoid_new, "libunuran"), Ptr{UNUR_URNG}, (Ptr{Void}, Ptr{Void}, ), urand, reset)
     res
 end
 
