@@ -8,7 +8,7 @@ There are still choices to make, so read the book listed at the end.
 
 UNU.RAN isn't on yum or apt or brew, so BinDeps isn't a great help
 here. If you want to install it with the
-option to use RngStreams, then you would ensure that it is configured
+option to use [RngStreams](http://statmath.wu.ac.at/software/RngStreams/), then you would ensure that it is configured
 to create shared libraries and that those shared libraries use PIC:
 
     tar zxf rngstreams-1.0.1.tar.gz
