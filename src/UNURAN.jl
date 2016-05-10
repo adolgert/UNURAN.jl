@@ -1,5 +1,6 @@
 module UNURAN
 
-# package code goes here
+include("Constants.jl")
+include("Functions.jl")
 
 end # module
