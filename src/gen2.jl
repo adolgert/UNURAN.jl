@@ -11,6 +11,7 @@ get_it(f::FunctionDecl) = spelling(f)
 
 function Constants(top)
     f=open("Constants.jl", "w")
+    println(f, "# This is created by the gen2.jl script.")
 
     fdecls=cindex.search(top, EnumDecl)
     for cursor in fdecls
@@ -31,7 +32,7 @@ function Constants(top)
             end
             all_keys=join(keys(const_dict), ", ")
             println(f, "export $all_keys")
-            println()
+            println(f)
             for (k, v) in const_dict
                 hv=v
                 if data_type=="Cuint"
@@ -43,9 +44,9 @@ function Constants(top)
         end
     end
 
-    println("export UNUR_INFINITY")
-    println("const UNUR_INFINITY = (Inf)")
-    println()
+    println(f, "export UNUR_INFINITY")
+    println(f, "const UNUR_INFINITY = (Inf)")
+    println(f)
 end
 
 header="""
@@ -139,8 +140,15 @@ parsed_to_jl=Dict{ASCIIString,ASCIIString}(
     "size" => "Csize_t",
     )
 
+sigs=Dict{ASCIIString,Any}(
+    "unur_distr_cemp_get_data" => ["Cint", "Ptr{UNUR_DISTR}", "Ref{Ptr{Cdouble}}"],
+    "unur_distr_cont_get_pdfparams" => ["Cint", "Ptr{UNUR_DISTR}", "Ref{Ptr{Cdouble}}"],
+    "unur_distr_cont_get_pdfparams_vec" => ["Cint", "Ptr{UNUR_DISTR}", "Cint", "Ref{Ptr{Cdouble}}"],
+    )
+
 function Functions(top)
     f=open("Functions.jl", "w")
+    println(f, "# This is created by the gen2.jl script.")
     print(f, header)
 
     fdecls=cindex.search(top, FunctionDecl)
@@ -181,23 +189,39 @@ function Functions(top)
                     aname=Clang.cindex.getCursorDisplayName(a)
                     push!(argnames, aname)
                     if isa(cu_type(a), Pointer)
+                        deref_cnt=0
+                        final=""
+                        core=got
                         kind=tokenize(a)[1].text
                         for t in tokenize(a)
                             if ismatch(r"UNUR", t.text)
                                 if ismatch(r"FUNCT", t.text)
-                                    got="Ptr{Void}"
+                                    core="Void"
                                 elseif ismatch(r"ERR", t.text)
-                                    got="Ptr{Void}"
+                                    core="Void"
                                 else
-                                    got="Ptr{$(t.text)}"
+                                    core="$(t.text)"
                                 end
                             elseif ismatch(r"char", t.text)
-                                got="Cstring"
+                                final="Cstring"
                             elseif ismatch(r"^double", t.text)
-                                got="Ptr{Cdouble}"
+                                core="Cdouble"
+                            elseif "*"==t.text
+                                deref_cnt+=1
                             end
                         end
-                        push!(argtypes, got)
+                        if length(final)<1
+                            if deref_cnt>1
+                                if ismatch(r"get_", function_name)
+                                    final="Ref{Ptr{$core}}"
+                                else
+                                    final="Ptr{Ptr{$core}}"
+                                end
+                            else
+                                final="Ptr{$core}"
+                            end
+                        end
+                        push!(argtypes, final)
                     else
                         kind=""
                         tokens=""
@@ -213,11 +237,11 @@ function Functions(top)
                 end
             end
 
-# export unur_distr_cont_set_pdfparams
-# function unur_distr_cont_set_pdfparams(distribution, params, n_params)
-#     res=ccall((:unur_distr_cont_set_pdfparams, "libunuran"), Cint, (Ptr{UNUR_DISTR}, Ptr{Cdouble}, Cint, ), distribution, params, n_params)
-#     res
-# end
+            # if haskey(sigs, function_name)
+            #     rt_type=sigs[function_name][1]
+            #     argtypes=sigs[function_name][2:end]
+            # end
+
             println(f, "export $(function_name)")
             all_args=join(argnames, ", ")
             println(f, "function $(function_name)($all_args)")
@@ -226,7 +250,8 @@ function Functions(top)
                 println(f, "    res=ccall($sym, $rt_type, () )")
             else
                 args_type=join(argtypes, ", ")
-                println(f, "    res=ccall($sym, $rt_type, ($args_type, ), $all_args)")
+                println(f, "    res=ccall($sym, $rt_type,")
+                println(f, "            ($args_type, ), $all_args)")
             end
             if rt_pointer
                 if rt_str=="UNUR_DISTR"
